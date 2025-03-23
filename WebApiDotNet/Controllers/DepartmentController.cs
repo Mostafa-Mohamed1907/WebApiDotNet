@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebApiDotNet.Dtos;
 using WebApiDotNet.Models;
 
 namespace WebApiDotNet.Controllers
@@ -20,6 +22,24 @@ namespace WebApiDotNet.Controllers
             List<Department> deptsList = context.Department.ToList();
             return Ok(deptsList);
         }
+
+        [HttpGet("p")]
+        public ActionResult <List<DeptWithEmpCountDTO>> GetDeptDetails()
+        {
+            List<Department> deptsList = context.Department.Include(d=>d.emps).ToList();
+            List<DeptWithEmpCountDTO> DtoDeptOut = new List<DeptWithEmpCountDTO>();
+            foreach(Department item in deptsList)
+            {
+                DeptWithEmpCountDTO DeptDtoIn = new DeptWithEmpCountDTO();
+                DeptDtoIn.ID = item.Id;
+                DeptDtoIn.Name = item.Name;
+                DeptDtoIn.EmpCount = item.emps.Count();
+
+                DtoDeptOut.Add(DeptDtoIn);
+            }
+            return DtoDeptOut;
+        }
+
         [HttpGet]
         [Route("{id}")]
         public IActionResult GetDeptById(int id)
